@@ -3,11 +3,25 @@ import { serve } from "bun"
 import { Hono } from "hono"
 import { jwt } from "hono/jwt"
 import { LeaderboardController } from "./controllers/leaderboard/leaderboard.controller"
+import { AdminController } from "./controllers/admin/admin.controller"
 import { swaggerUI } from "@hono/swagger-ui"
 import { logger } from "hono/logger"
 
 export const app = new OpenAPIHono()
-app.use("*",logger())
+app.use("*", logger())
+
+// Mount admin routes first (without JWT protection on sign endpoint)
+app.route("/admin", AdminController)
+
+// JWT middleware for all routes except /admin/sign, /swagger, and /docs
+const JWT_SECRET = process.env.JWT_SECRET || "default-secret-change-in-production"
+app.use("/leaderboard/*", async (c, next) => {
+	try {
+		return await jwt({ secret: JWT_SECRET, alg: "HS256" })(c, next)
+	} catch (error) {
+		return c.json({ error: "Forbidden - Invalid or missing token" }, 403)
+	}
+})
 
 export const server = serve({
 	fetch: app.fetch,
@@ -30,6 +44,12 @@ app.doc("/docs/openapi.json", {
 		title: "Cart Game Backend API",
 		version: "1.0.0"
 	}
+})
+app.openAPIRegistry.registerComponent("securitySchemes", "Bearer", {
+	type: "http",
+	scheme: "bearer",
+	bearerFormat: "JWT",
+	description: "Enter your JWT token"
 })
 app.onError((err, c) => {
 	console.error(err)

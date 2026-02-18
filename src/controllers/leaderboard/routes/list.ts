@@ -26,6 +26,11 @@ export const list_route = createRoute({
 	method: "get",
 	tags: ["Leaderboard"],
 	path: "/list",
+	security: [
+		{
+			Bearer: []
+		}
+	],
 	responses: {
 		200: {
 			content: {

@@ -18,6 +18,11 @@ export const get_player_route = createRoute({
 	method: "get",
 	path: "/get-player",
 	tags: ["Leaderboard"],
+	security: [
+		{
+			Bearer: []
+		}
+	],
 	responses: {
 		200: {
 			content: {

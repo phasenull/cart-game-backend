@@ -13,6 +13,11 @@ export const update_player_route = createRoute({
 	method: "post",
 	tags: ["Leaderboard"],
 	path: "/update-player",
+	security: [
+		{
+			Bearer: []
+		}
+	],
 	responses: {
 		200: {
 			content: {
