@@ -25,6 +25,9 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 *.sqlite
 # caches
 *.sql
+*.sqlite
+db.sqlite
+db.*
 .eslintcache
 .cache
 *.tsbuildinfo
