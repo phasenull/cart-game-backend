@@ -2,13 +2,19 @@ import { OpenAPIHono } from "@hono/zod-openapi"
 import { sign_route } from "./routes/sign"
 import { sign as jwtSign } from "hono/jwt"
 
-export const AdminController = new OpenAPIHono()
+type Bindings = {
+	ADMIN_USERNAME: string
+	ADMIN_PASSWORD: string
+	JWT_SECRET: string
+}
+
+export const AdminController = new OpenAPIHono<{ Bindings: Bindings }>()
 
 AdminController.openapi(sign_route, async (c) => {
 	const { username, password, age } = c.req.valid("json")
 	
-	const ADMIN_USERNAME = process.env.ADMIN_USERNAME
-	const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
+	const ADMIN_USERNAME = c.env.ADMIN_USERNAME
+	const ADMIN_PASSWORD = c.env.ADMIN_PASSWORD
 	
 	if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
 		return c.json({ error: "Admin credentials not configured" }, 500)
@@ -17,8 +23,9 @@ AdminController.openapi(sign_route, async (c) => {
 	// Timing-safe comparison to prevent timing attacks
 	const timingSafeEqual = (a: string, b: string): boolean => {
 		const maxLength = Math.max(a.length, b.length)
-		const aBuffer = new TextEncoder().encode(a.padEnd(maxLength))
-		const bBuffer = new TextEncoder().encode(b.padEnd(maxLength))
+		const encoder = new TextEncoder()
+		const aBuffer = encoder.encode(a.padEnd(maxLength))
+		const bBuffer = encoder.encode(b.padEnd(maxLength))
 		
 		let result = 0
 		for (let i = 0; i < maxLength; i++) {
@@ -35,7 +42,7 @@ AdminController.openapi(sign_route, async (c) => {
 	}
 	
 	// Generate JWT token
-	const JWT_SECRET = process.env.JWT_SECRET || "default-secret-change-in-production"
+	const JWT_SECRET = c.env.JWT_SECRET || "default-secret-change-in-production"
 	const expiresAt = Date.now() + (age * 24 * 60 * 60 * 1000)
 	
 	const token = await jwtSign(

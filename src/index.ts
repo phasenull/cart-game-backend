@@ -1,15 +1,26 @@
 import { OpenAPIHono } from "@hono/zod-openapi"
-import { serve } from "bun"
-import { Hono } from "hono"
 import { jwt } from "hono/jwt"
 import { LeaderboardController } from "./controllers/leaderboard/leaderboard.controller"
 import { AdminController } from "./controllers/admin/admin.controller"
 import { swaggerUI } from "@hono/swagger-ui"
 import { logger } from "hono/logger"
+import { getDb, type Database } from "./utils"
 
-export const app = new OpenAPIHono()
-app.use("*", logger((_,)=>{
-	const [dir,method,path,status,ms,error] = _.split(" ")
+type Bindings = {
+	DB: any
+	JWT_SECRET: string
+	ADMIN_USERNAME: string
+	ADMIN_PASSWORD: string
+}
+
+type Variables = {
+	db: Database
+}
+
+export const app = new OpenAPIHono<{ Bindings: Bindings; Variables: Variables }>()
+
+app.use("*", logger((str, ...rest) => {
+	const [dir, method, path, status, ms, error] = str.split(" ")
 	if (dir?.startsWith("-->")) {
 		if (status !== "200") {
 			console.log(`${method} ${path} ${status} ${ms}${error ? ` - ${error}` : ""}`)
@@ -17,27 +28,32 @@ app.use("*", logger((_,)=>{
 	}
 }))
 
+// IP logging middleware
+app.use("*", async (c, next) => {
+	const ip = c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown"
+	console.log(`[${new Date().toISOString()}] ${ip} - ${c.req.method} ${c.req.path}`)
+	await next()
+})
+
+// Initialize database in context
+app.use("*", async (c, next) => {
+	c.set("db", getDb(c.env.DB))
+	await next()
+})
+
 // Mount admin routes first (without JWT protection on sign endpoint)
 app.route("/admin", AdminController)
 
 // JWT middleware for all routes except /admin/sign, /swagger, and /docs
-const JWT_SECRET = process.env.JWT_SECRET || "default-secret-change-in-production"
 app.use("/leaderboard/*", async (c, next) => {
 	try {
+		const JWT_SECRET = c.env.JWT_SECRET || "default-secret-change-in-production"
 		return await jwt({ secret: JWT_SECRET, alg: "HS256" })(c, next)
 	} catch (error) {
 		return c.json({ error: "Forbidden - Invalid or missing token" }, 403)
 	}
 })
 
-export const server = serve({
-	fetch: app.fetch,
-	error: (err) => {
-		console.error(err)
-		return new Response("Internal Server Error", { status: 500 })
-	},
-	hostname: "0.0.0.0"
-})
 app.route("/leaderboard", LeaderboardController)
 app.get(
 	"/swagger",
@@ -62,4 +78,5 @@ app.onError((err, c) => {
 	console.error(err)
 	return c.json({ error: "Internal Server Error" }, 500)
 })
-console.log(`started server on: http://${server.hostname}:${server.port}`)
+
+export default app

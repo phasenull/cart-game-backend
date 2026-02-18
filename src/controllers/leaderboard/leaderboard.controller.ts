@@ -2,16 +2,24 @@ import { OpenAPIHono, z } from "@hono/zod-openapi"
 import { Hono } from "hono"
 import { get_player_route } from "./routes/get-player"
 import { eq, sql, desc, gt, count } from "drizzle-orm"
-import { db, IPlayerSchema } from "../../utils"
-import { drizzle } from "drizzle-orm/bun-sqlite"
+import { IPlayerSchema, type Database } from "../../utils"
 import { playersTable } from "../../schema"
 import { createSelectSchema } from "drizzle-orm/zod"
 import { update_player_route } from "./routes/update-player"
 import { list_route } from "./routes/list"
-export const LeaderboardController = new OpenAPIHono()
-// LeaderboardController.get("/list-leaderboard", async (c) => {})
-// LeaderboardController.post("/update-player", async (c) => {})
+
+type Bindings = {
+	DB: any
+}
+
+type Variables = {
+	db: Database
+}
+
+export const LeaderboardController = new OpenAPIHono<{ Bindings: Bindings; Variables: Variables }>()
+
 LeaderboardController.openapi(get_player_route, async (c) => {
+	const db = c.get("db")
 	const { user_id } = c.req.valid("query")
 	if (!user_id) {
 		return c.json({ error: "Missing user_id query parameter" }, 400)
@@ -40,6 +48,7 @@ LeaderboardController.openapi(get_player_route, async (c) => {
 	return c.json({ player: player_data, ranks }, 200)
 })
 LeaderboardController.openapi(update_player_route, async (c) => {
+	const db = c.get("db")
 	const body = await c.req.json()
 	const { user_id, cash, playtime, robux_spent } = body
 	if (!user_id) {
@@ -63,6 +72,7 @@ LeaderboardController.openapi(update_player_route, async (c) => {
 })
 
 LeaderboardController.openapi(list_route, async (c) => {
+	const db = c.get("db")
 	const [cashLeaderboard, playtimeLeaderboard, robuxSpentLeaderboard] = await Promise.all([
 		db.select({ user_id: playersTable.user_id, cash: playersTable.cash }).from(playersTable).orderBy(desc(playersTable.cash)).limit(100),
 		db.select({ user_id: playersTable.user_id, playtime: playersTable.playtime }).from(playersTable).orderBy(desc(playersTable.playtime)).limit(100),

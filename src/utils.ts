@@ -1,10 +1,12 @@
-import { Database } from "bun:sqlite"
-import { drizzle } from "drizzle-orm/bun-sqlite"
+import { drizzle } from "drizzle-orm/d1"
 import z from "zod"
 import * as schema from "./schema"
 import { createSelectSchema } from "drizzle-orm/zod"
-const database = new Database("./db.sqlite")
-export const db = drizzle<typeof schema>("db.sqlite", { schema })
+import type { DrizzleD1Database } from "drizzle-orm/d1"
+
+export type Database = DrizzleD1Database<typeof schema>
+
+export const getDb = (d1: any) => drizzle(d1, { schema })
 
 const IErrorResponseSchema = z.object({
 	error: z.string()

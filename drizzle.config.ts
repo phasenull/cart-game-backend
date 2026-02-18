@@ -1,10 +1,12 @@
-import type { DrizzleConfig } from "drizzle-orm"
-import type { DrizzleBunSqliteDatabaseConfig } from "drizzle-orm/bun-sqlite"
 import { defineConfig } from "drizzle-kit"
+
 export default defineConfig({
 	dialect: "sqlite",
 	schema: "./src/schema.ts",
+	driver: "d1-http",
 	dbCredentials: {
-		url: "./db.sqlite"
+		accountId: process.env.CLOUDFLARE_ACCOUNT_ID!,
+		databaseId: process.env.CLOUDFLARE_DATABASE_ID!,
+		token: process.env.CLOUDFLARE_D1_TOKEN!
 	}
 })
