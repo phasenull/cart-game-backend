@@ -8,7 +8,14 @@ import { swaggerUI } from "@hono/swagger-ui"
 import { logger } from "hono/logger"
 
 export const app = new OpenAPIHono()
-app.use("*", logger())
+app.use("*", logger((_,)=>{
+	const [dir,method,path,status,ms,error] = _.split(" ")
+	if (dir?.startsWith("-->")) {
+		if (status !== "200") {
+			console.log(`${method} ${path} ${status} ${ms}${error ? ` - ${error}` : ""}`)
+		}
+	}
+}))
 
 // Mount admin routes first (without JWT protection on sign endpoint)
 app.route("/admin", AdminController)
