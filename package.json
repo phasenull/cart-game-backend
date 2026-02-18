@@ -2,12 +2,15 @@
   "dependencies": {
     "@hono/swagger-ui": "^0.5.3",
     "@hono/zod-openapi": "^1.2.2",
+    "@types/node": "^25.2.3",
     "drizzle-orm": "1.0.0-beta.15-859cf75",
     "hono": "^4.11.10",
     "zod": "^4.3.6"
   },
   "scripts": {
-    "dev": "bun --watch ./src/index.ts"
+    "dev": "bun --watch ./src/index.ts",
+    "db:init": "wrangler d1 execute cart-game-db --file=./schema.sql --remote",
+    "db:init:local": "wrangler d1 execute cart-game-db --file=./schema.sql --local"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260218.0",
