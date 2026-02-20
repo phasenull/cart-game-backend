@@ -62,9 +62,9 @@ LeaderboardController.openapi(update_player_route, async (c) => {
 	}).onConflictDoUpdate({
 		target: playersTable.user_id,
 		set: {
-			cash: sql`${playersTable.cash} + ${cash || 0}`,
-			playtime: sql`${playersTable.playtime} + ${playtime || 0}`,
-			robux_spent: sql`${playersTable.robux_spent} + ${robux_spent || 0}`,
+			cash: cash || 0,
+			playtime: playtime || 0,
+			robux_spent: robux_spent || 0,
 			updated_at: sql`CURRENT_TIMESTAMP`
 		}
 	}).returning()
