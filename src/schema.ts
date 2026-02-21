@@ -23,6 +23,7 @@ export const logsTable = sqliteTable("logs",{
 	id: int().primaryKey().unique().notNull(),
 	created_at: int({mode:"timestamp_ms"}).notNull(),
 	job_id: int().notNull(),
+	published_version: int(),
 	context: text().notNull(),
 	message: text().notNull(),
 	type: text({mode:"text"}).$type<"error"|"warning">(),

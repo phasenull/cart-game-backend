@@ -33,7 +33,8 @@ LogsController.openapi(create_log_route, async (c) => {
 			context: log.context,
 			message: log.message,
 			type: log.type ?? null,
-			created_at: log.created_at ?? Date.now()
+			created_at: log.created_at ?? Date.now(),
+			published_version: log.published_version ?? null
 		}))
 	)
 	return c.json({ success: true }, 200)
