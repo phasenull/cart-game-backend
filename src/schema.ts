@@ -22,7 +22,7 @@ export const playersTable = sqliteTable("players",{
 export const logsTable = sqliteTable("logs",{
 	id: int().primaryKey().unique().notNull(),
 	created_at: int({mode:"timestamp_ms"}).notNull(),
-	job_id: int().notNull(),
+	job_id: text().notNull(),
 	published_version: int(),
 	context: text().notNull(),
 	message: text().notNull(),
