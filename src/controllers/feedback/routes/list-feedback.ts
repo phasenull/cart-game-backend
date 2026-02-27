@@ -49,5 +49,6 @@ export const list_feedback_route = createRoute({
 			description: "Feedback list",
 		},
 		400: ErrorResponse,
+		500: ErrorResponse,
 	},
 });

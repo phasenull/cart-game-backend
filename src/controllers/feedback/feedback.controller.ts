@@ -34,22 +34,27 @@ FeedbackController.openapi(list_feedback_route, async (c) => {
 
 	const whereClause = status ? eq(feedbackTable.status, status) : undefined
 
-	const [feedbackList, totalResult] = await Promise.all([
-		db
-			.select()
-			.from(feedbackTable)
-			.where(whereClause)
-			.orderBy(desc(feedbackTable.created_at))
-			.limit(limit)
-			.offset(offset),
-		db
-			.select({ count: count() })
-			.from(feedbackTable)
-			.where(whereClause)
-	])
+	let feedbackList, totalResult
+	try {
+		;[feedbackList, totalResult] = await Promise.all([
+			db
+				.select()
+				.from(feedbackTable)
+				.where(whereClause)
+				.orderBy(desc(feedbackTable.created_at))
+				.limit(limit)
+				.offset(offset),
+			db
+				.select({ count: count() })
+				.from(feedbackTable)
+				.where(whereClause)
+		])
+	} catch (e) {
+		return c.json({ error: String(e) }, 500)
+	}
 
 	const toMs = (v: Date | number | null) => v instanceof Date ? v.getTime() : v
-	const feedback = feedbackList.map((row) => ({
+	const feedback = feedbackList.map((row: typeof feedbackList[number]) => ({
 		...row,
 		created_at: toMs(row.created_at) as number,
 		responded_at: toMs(row.responded_at),
