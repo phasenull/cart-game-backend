@@ -9,6 +9,9 @@ export const feedbackTable = sqliteTable("feedback", {
 	user_id: int().notNull(),
 	description: text().notNull(),
 	status: text({ enum: ["pending", "rejected", "approved"] }).notNull().default("pending"),
+	response: text(),
+	responded_at: int({ mode: "timestamp_ms" }),
+	deleted_at: int({ mode: "timestamp_ms" }),
 	created_at: int({ mode: "timestamp_ms" }).notNull().defaultNow(),
 }, (table) => [
 	index("idx_feedback_user_id").on(table.user_id),

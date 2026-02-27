@@ -23,7 +23,8 @@ FeedbackController.openapi(create_feedback_route, async (c) => {
 		return c.json({ error: "Failed to create feedback" }, 400)
 	}
 
-	const feedback = { ...row, created_at: row.created_at instanceof Date ? row.created_at.getTime() : row.created_at }
+	const toMs = (v: Date | number | null) => v instanceof Date ? v.getTime() : v
+	const feedback = { ...row, created_at: toMs(row.created_at) as number, responded_at: toMs(row.responded_at), deleted_at: toMs(row.deleted_at) }
 	return c.json({ success: true, feedback }, 200)
 })
 
@@ -47,9 +48,12 @@ FeedbackController.openapi(list_feedback_route, async (c) => {
 			.where(whereClause)
 	])
 
+	const toMs = (v: Date | number | null) => v instanceof Date ? v.getTime() : v
 	const feedback = feedbackList.map((row) => ({
 		...row,
-		created_at: row.created_at instanceof Date ? row.created_at.getTime() : row.created_at
+		created_at: toMs(row.created_at) as number,
+		responded_at: toMs(row.responded_at),
+		deleted_at: toMs(row.deleted_at),
 	}))
 	return c.json({ feedback, total: totalResult[0]?.count ?? 0 }, 200)
 })

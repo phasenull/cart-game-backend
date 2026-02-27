@@ -13,6 +13,9 @@ export const ICreateFeedbackResponse = z.object({
 		user_id: z.number(),
 		description: z.string(),
 		status: z.enum(["pending", "rejected", "approved"]),
+		response: z.string().nullable(),
+		responded_at: z.number().nullable(),
+		deleted_at: z.number().nullable(),
 		created_at: z.number()
 	})
 })
