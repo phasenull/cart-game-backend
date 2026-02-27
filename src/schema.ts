@@ -4,6 +4,17 @@ const TABLE_UTILS = {
 	created_at: int({mode:"timestamp_ms"}).notNull().defaultNow(),
 	updated_at: int({mode:"timestamp_ms"})
 }
+export const feedbackTable = sqliteTable("feedback", {
+	id: int().primaryKey({ autoIncrement: true }),
+	user_id: int().notNull(),
+	description: text().notNull(),
+	status: text({ enum: ["pending", "rejected", "approved"] }).notNull().default("pending"),
+	created_at: int({ mode: "timestamp_ms" }).notNull().defaultNow(),
+}, (table) => [
+	index("idx_feedback_user_id").on(table.user_id),
+	index("idx_feedback_status").on(table.status),
+	index("idx_feedback_created_at").on(table.created_at),
+])
 export const playersTable = sqliteTable("players",{
 	user_id: int().primaryKey().unique().notNull(),
 	...TABLE_UTILS,
