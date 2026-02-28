@@ -3,6 +3,7 @@ import { jwt } from "hono/jwt"
 import { LeaderboardController } from "./controllers/leaderboard/leaderboard.controller"
 import { AdminController } from "./controllers/admin/admin.controller"
 import { FeedbackController } from "./controllers/feedback/feedback.controller"
+import { SessionController } from "./controllers/session/session.controller"
 import { swaggerUI } from "@hono/swagger-ui"
 import { logger } from "hono/logger"
 import { getDb, type Database } from "./utils"
@@ -73,8 +74,18 @@ app.use("/feedback/*", async (c, next) => {
 	}
 })
 
+app.use("/sessions/*", async (c, next) => {
+	try {
+		const JWT_SECRET = c.env.JWT_SECRET || "default-secret-change-in-production"
+		return await jwt({ secret: JWT_SECRET, alg: "HS256" })(c, next)
+	} catch (error) {
+		return c.json({ error: "Forbidden - Invalid or missing token" }, 403)
+	}
+})
+
 app.route("/leaderboard", LeaderboardController)
 app.route("/feedback", FeedbackController)
+app.route("/sessions", SessionController)
 app.get(
 	"/swagger",
 	swaggerUI({

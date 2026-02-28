@@ -1,4 +1,4 @@
-import { index, int, sqliteTable,text } from "drizzle-orm/sqlite-core";
+import { index, int, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 const TABLE_UTILS = {
 	created_at: int({mode:"timestamp_ms"}).notNull().defaultNow(),
@@ -18,6 +18,22 @@ export const feedbackTable = sqliteTable("feedback", {
 	index("idx_feedback_status").on(table.status),
 	index("idx_feedback_created_at").on(table.created_at),
 ])
+export const sessionTable = sqliteTable("sessions", {
+	uuid: text().primaryKey().notNull(),
+	user_id: int().notNull(),
+	server_version: text().notNull(),
+	joined_at: int({ mode: "timestamp_ms" }).notNull(),
+	left_at: int({ mode: "timestamp_ms" }),
+	playtime: int(),
+	leave_x: int(),
+	leave_y: int(),
+	leave_z: int(),
+	last_collected_checkpoint: int(),
+}, (table) => [
+	index("idx_sessions_user_id").on(table.user_id),
+	index("idx_sessions_joined_at").on(table.joined_at),
+])
+
 export const playersTable = sqliteTable("players",{
 	user_id: int().primaryKey().unique().notNull(),
 	...TABLE_UTILS,
