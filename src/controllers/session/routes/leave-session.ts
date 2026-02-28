@@ -3,6 +3,9 @@ import { ErrorResponse } from "../../../utils"
 
 export const ILeaveSessionBody = z.object({
 	uuid: z.string().uuid(),
+	user_id: z.number().int(),
+	server_version: z.string().min(1),
+	joined_at: z.number().int(),
 	left_at: z.number().int(),
 	playtime: z.number().int(),
 	leave_x: z.number().int(),
